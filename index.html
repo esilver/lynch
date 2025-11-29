@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Owls Are Not What They Seem</title>
+    <title>The Black Lodge</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=Crimson+Text:ital@0;1&display=swap');
 
         * {
             margin: 0;
@@ -22,19 +22,59 @@
             --flicker: #fff8dc;
         }
 
-        html {
-            scroll-behavior: smooth;
-        }
-
         body {
             background-color: var(--void-black);
             color: var(--cream);
-            font-family: 'Playfair Display', serif;
-            overflow-x: hidden;
-            cursor: crosshair;
+            font-family: 'Crimson Text', serif;
+            overflow: hidden;
+            cursor: pointer;
+            height: 100vh;
+            width: 100vw;
         }
 
-        /* TV Static Overlay */
+        /* Audio Controls */
+        .audio-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid var(--curtain-red);
+            color: var(--cream);
+            padding: 8px 16px;
+            font-family: 'Special Elite', cursive;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .audio-control:hover {
+            background: var(--curtain-red);
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            background: var(--curtain-red);
+            z-index: 10000;
+            transition: width 0.5s ease;
+        }
+
+        /* Scene Counter */
+        .scene-counter {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-family: 'Special Elite', cursive;
+            font-size: 0.8rem;
+            opacity: 0.4;
+            z-index: 10000;
+        }
+
+        /* Static Overlay */
         .static-overlay {
             position: fixed;
             top: 0;
@@ -43,7 +83,7 @@
             height: 100%;
             pointer-events: none;
             z-index: 9999;
-            opacity: 0.03;
+            opacity: 0.02;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
             animation: staticFlicker 0.1s infinite;
         }
@@ -53,8 +93,8 @@
             50% { opacity: 0.04; }
         }
 
-        /* Scanlines */
-        .scanlines {
+        /* Vignette */
+        .vignette {
             position: fixed;
             top: 0;
             left: 0;
@@ -62,805 +102,882 @@
             height: 100%;
             pointer-events: none;
             z-index: 9998;
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(0, 0, 0, 0.15),
-                rgba(0, 0, 0, 0.15) 1px,
-                transparent 1px,
-                transparent 2px
-            );
+            background: radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(0,0,0,0.8) 100%);
         }
 
-        /* Red Curtains */
-        .curtain-left, .curtain-right {
+        /* Scene Container */
+        .scene-container {
             position: fixed;
             top: 0;
-            width: 120px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+            padding: 2rem;
+        }
+
+        .scene-container.active {
+            opacity: 1;
+        }
+
+        .scene-container.fade-out {
+            opacity: 0;
+        }
+
+        /* Scene Content */
+        .scene-content {
+            max-width: 800px;
+            text-align: center;
+            position: relative;
+        }
+
+        .scene-text {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            line-height: 2;
+            font-style: italic;
+            text-shadow: 0 0 30px rgba(0,0,0,0.8);
+        }
+
+        .scene-text.large {
+            font-size: clamp(2rem, 6vw, 4rem);
+            font-family: 'Playfair Display', serif;
+            font-style: normal;
+            letter-spacing: 0.2em;
+        }
+
+        .scene-text.small {
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            opacity: 0.7;
+        }
+
+        .scene-text.typewriter {
+            font-family: 'Special Elite', cursive;
+            font-style: normal;
+        }
+
+        .scene-text.red {
+            color: var(--curtain-red);
+        }
+
+        .scene-text.backwards {
+            direction: rtl;
+            unicode-bidi: bidi-override;
+        }
+
+        .scene-text.glitch {
+            animation: textGlitch 0.3s infinite;
+        }
+
+        @keyframes textGlitch {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-2px, 1px); }
+            40% { transform: translate(2px, -1px); }
+            60% { transform: translate(-1px, -1px); }
+            80% { transform: translate(1px, 1px); }
+        }
+
+        /* Click Prompt */
+        .click-prompt {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Special Elite', cursive;
+            font-size: 0.9rem;
+            opacity: 0;
+            animation: pulsePrompt 2s ease-in-out infinite;
+            animation-delay: 2s;
+            z-index: 10000;
+        }
+
+        @keyframes pulsePrompt {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Special Scene Styles */
+        .curtains {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .curtain-left, .curtain-right {
+            position: absolute;
+            top: 0;
+            width: 15%;
             height: 100%;
             background: linear-gradient(90deg,
                 var(--blood-red) 0%,
-                var(--curtain-red) 30%,
-                #4a1c1c 60%,
-                var(--void-black) 100%
+                var(--curtain-red) 40%,
+                #4a1c1c 70%,
+                transparent 100%
             );
-            z-index: 100;
-            box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
         }
 
         .curtain-left {
             left: 0;
-            animation: curtainSway 8s ease-in-out infinite;
         }
 
         .curtain-right {
             right: 0;
             transform: scaleX(-1);
-            animation: curtainSway 8s ease-in-out infinite reverse;
         }
 
-        .curtain-left::before, .curtain-right::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: repeating-linear-gradient(
-                90deg,
-                transparent 0px,
-                rgba(0,0,0,0.3) 5px,
-                transparent 10px
-            );
+        .curtains.hidden {
+            opacity: 0;
+            transition: opacity 2s;
         }
 
-        @keyframes curtainSway {
-            0%, 100% { transform: scaleX(1); }
-            50% { transform: scaleX(1.02); }
-        }
-
-        /* Main Content */
-        main {
-            margin: 0 120px;
-            min-height: 100vh;
-            position: relative;
-        }
-
-        /* Hero Section - The Room */
-        .the-room {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            background:
-                radial-gradient(ellipse at center, var(--smoke) 0%, var(--void-black) 70%);
-        }
-
-        .the-room::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background:
-                repeating-linear-gradient(
-                    45deg,
-                    transparent,
-                    transparent 35px,
-                    rgba(20,20,20,0.5) 35px,
-                    rgba(20,20,20,0.5) 70px
-                );
-            opacity: 0.3;
-        }
-
-        .title-container {
-            text-align: center;
-            position: relative;
-            z-index: 10;
-        }
-
-        .main-title {
-            font-size: clamp(2rem, 8vw, 6rem);
-            font-weight: 400;
-            letter-spacing: 0.3em;
-            text-transform: uppercase;
-            color: var(--cream);
-            text-shadow:
-                0 0 10px rgba(139, 0, 0, 0.5),
-                0 0 20px rgba(139, 0, 0, 0.3),
-                0 0 40px rgba(139, 0, 0, 0.2);
-            animation: titleFlicker 4s ease-in-out infinite;
-            margin-bottom: 2rem;
-        }
-
-        @keyframes titleFlicker {
-            0%, 100% { opacity: 1; }
-            92% { opacity: 1; }
-            93% { opacity: 0.8; }
-            94% { opacity: 1; }
-            96% { opacity: 0.9; }
-            97% { opacity: 1; }
-        }
-
-        .subtitle {
-            font-family: 'Special Elite', cursive;
-            font-size: clamp(0.8rem, 2vw, 1.2rem);
-            letter-spacing: 0.5em;
-            color: var(--curtain-red);
-            opacity: 0.8;
-        }
-
-        .backwards-text {
-            font-style: italic;
-            direction: rtl;
-            unicode-bidi: bidi-override;
-        }
-
-        /* Floating Elements */
-        .floating-element {
-            position: absolute;
-            opacity: 0.1;
-            font-size: 4rem;
-            animation: float 20s ease-in-out infinite;
-            pointer-events: none;
-        }
-
-        .owl { top: 20%; left: 10%; animation-delay: 0s; }
-        .coffee { top: 60%; right: 15%; animation-delay: -5s; }
-        .log { bottom: 20%; left: 20%; animation-delay: -10s; }
-        .key { top: 40%; right: 25%; animation-delay: -15s; }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.1; }
-            25% { transform: translateY(-20px) rotate(5deg); opacity: 0.15; }
-            50% { transform: translateY(0) rotate(0deg); opacity: 0.1; }
-            75% { transform: translateY(20px) rotate(-5deg); opacity: 0.05; }
-        }
-
-        /* Mystery Sections */
-        .mystery-section {
-            min-height: 100vh;
-            padding: 4rem 2rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
-        }
-
-        .mystery-section:nth-child(even) {
-            background: linear-gradient(180deg, var(--void-black), var(--smoke), var(--void-black));
-        }
-
-        .section-content {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .cryptic-heading {
-            font-size: clamp(1.5rem, 4vw, 3rem);
-            margin-bottom: 2rem;
-            color: var(--curtain-red);
-            position: relative;
-            display: inline-block;
-        }
-
-        .cryptic-heading::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            width: 60%;
-            height: 1px;
-            background: linear-gradient(90deg, var(--curtain-red), transparent);
-        }
-
-        .mystery-text {
-            font-size: 1.1rem;
-            line-height: 2;
-            opacity: 0.9;
-            font-family: 'Special Elite', cursive;
-        }
-
-        .mystery-text p {
-            margin-bottom: 1.5rem;
-        }
-
-        .glitch-text {
-            position: relative;
-            display: inline-block;
-        }
-
-        .glitch-text::before,
-        .glitch-text::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        .glitch-text::before {
-            left: 2px;
-            text-shadow: -2px 0 var(--blood-red);
-            clip: rect(24px, 550px, 90px, 0);
-            animation: glitch-anim-1 2s infinite linear alternate-reverse;
-        }
-
-        .glitch-text::after {
-            left: -2px;
-            text-shadow: 2px 0 #00ffff;
-            clip: rect(85px, 550px, 140px, 0);
-            animation: glitch-anim-2 2s infinite linear alternate-reverse;
-        }
-
-        @keyframes glitch-anim-1 {
-            0% { clip: rect(51px, 9999px, 28px, 0); }
-            20% { clip: rect(70px, 9999px, 63px, 0); }
-            40% { clip: rect(26px, 9999px, 97px, 0); }
-            60% { clip: rect(62px, 9999px, 17px, 0); }
-            80% { clip: rect(43px, 9999px, 85px, 0); }
-            100% { clip: rect(87px, 9999px, 38px, 0); }
-        }
-
-        @keyframes glitch-anim-2 {
-            0% { clip: rect(13px, 9999px, 74px, 0); }
-            20% { clip: rect(33px, 9999px, 95px, 0); }
-            40% { clip: rect(81px, 9999px, 29px, 0); }
-            60% { clip: rect(45px, 9999px, 66px, 0); }
-            80% { clip: rect(9px, 9999px, 54px, 0); }
-            100% { clip: rect(72px, 9999px, 41px, 0); }
-        }
-
-        /* The Diner */
-        .diner-section {
-            background:
-                linear-gradient(rgba(10,10,10,0.9), rgba(10,10,10,0.9)),
-                repeating-linear-gradient(
-                    0deg,
-                    #1a1a1a 0px,
-                    #1a1a1a 2px,
-                    #222 2px,
-                    #222 4px
-                );
-        }
-
-        .menu-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            padding: 1rem 0;
-            border-bottom: 1px dotted rgba(245, 230, 211, 0.2);
-        }
-
-        .menu-item-name {
-            font-family: 'Playfair Display', serif;
-            font-style: italic;
-            font-size: 1.3rem;
-        }
-
-        .menu-item-price {
-            font-family: 'Special Elite', cursive;
-            color: var(--curtain-red);
-        }
-
-        /* The Lodge */
-        .lodge-section {
-            background:
-                linear-gradient(180deg, var(--void-black), #1a0505, var(--void-black));
-        }
-
+        /* Chevron Floor */
         .chevron-floor {
-            position: absolute;
+            position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 150px;
+            height: 200px;
             background: repeating-linear-gradient(
                 90deg,
                 #1a1a1a 0px,
-                #1a1a1a 25px,
-                #f5e6d3 25px,
-                #f5e6d3 50px
+                #1a1a1a 30px,
+                #f5e6d3 30px,
+                #f5e6d3 60px
             );
-            opacity: 0.1;
-            transform: perspective(500px) rotateX(60deg);
+            opacity: 0;
+            transform: perspective(500px) rotateX(70deg);
             transform-origin: bottom;
+            transition: opacity 2s;
+            z-index: 50;
         }
 
-        /* Quotes */
-        .quote-container {
-            padding: 3rem;
-            border-left: 3px solid var(--curtain-red);
-            margin: 2rem 0;
-            position: relative;
-            background: rgba(139, 0, 0, 0.05);
+        .chevron-floor.visible {
+            opacity: 0.15;
         }
 
-        .quote-text {
-            font-size: 1.5rem;
-            font-style: italic;
-            line-height: 1.8;
+        /* Background Effects */
+        .bg-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            transition: opacity 2s;
         }
 
-        .quote-author {
-            margin-top: 1rem;
-            font-family: 'Special Elite', cursive;
-            color: var(--curtain-red);
-            text-align: right;
+        .bg-forest {
+            background:
+                radial-gradient(ellipse at 20% 80%, rgba(0, 30, 0, 0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(0, 20, 0, 0.2) 0%, transparent 40%),
+                linear-gradient(180deg, #0a0a0a, #0a1a0a);
         }
 
-        /* Interactive Elements */
-        .mystery-door {
-            width: 200px;
-            height: 350px;
-            background: linear-gradient(180deg, #2a1a1a, #1a0a0a);
-            margin: 3rem auto;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.5s ease;
-            border: 2px solid #3a2a2a;
+        .bg-red {
+            background: radial-gradient(ellipse at center, rgba(139, 0, 0, 0.2) 0%, var(--void-black) 70%);
+        }
+
+        .bg-blue {
+            background: radial-gradient(ellipse at center, rgba(0, 0, 50, 0.3) 0%, var(--void-black) 70%);
+        }
+
+        .bg-fire {
+            background:
+                radial-gradient(ellipse at 50% 100%, rgba(139, 0, 0, 0.4) 0%, transparent 50%),
+                radial-gradient(ellipse at 30% 90%, rgba(200, 50, 0, 0.2) 0%, transparent 30%),
+                radial-gradient(ellipse at 70% 95%, rgba(200, 100, 0, 0.15) 0%, transparent 25%);
+            animation: fireFlicker 0.5s infinite;
+        }
+
+        @keyframes fireFlicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .bg-static {
+            animation: intenseStatic 0.1s infinite;
+        }
+
+        @keyframes intenseStatic {
+            0% { filter: brightness(1); }
+            25% { filter: brightness(1.1); }
+            50% { filter: brightness(0.9); }
+            75% { filter: brightness(1.05); }
+            100% { filter: brightness(1); }
+        }
+
+        /* Floating Elements */
+        .floating-symbol {
+            position: fixed;
+            font-size: 3rem;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 60;
+            transition: opacity 2s;
+        }
+
+        .floating-symbol.visible {
+            opacity: 0.15;
+            animation: floatSymbol 10s ease-in-out infinite;
+        }
+
+        @keyframes floatSymbol {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(5deg); }
+        }
+
+        /* Flashing */
+        .flash-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 99999;
+            transition: opacity 0.1s;
+        }
+
+        /* Character Silhouette */
+        .silhouette {
+            position: fixed;
+            bottom: 10%;
+            font-size: 15rem;
+            opacity: 0;
+            transition: opacity 3s;
+            z-index: 55;
+            filter: brightness(0);
+        }
+
+        .silhouette.visible {
+            opacity: 0.3;
+        }
+
+        /* Door */
+        .door {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px;
+            height: 280px;
+            background: linear-gradient(180deg, #1a0a0a, #0a0505);
+            border: 2px solid #2a1a1a;
+            opacity: 0;
+            transition: opacity 2s;
+            z-index: 70;
             box-shadow:
-                inset 0 0 50px rgba(0,0,0,0.8),
-                0 0 30px rgba(139, 0, 0, 0.2);
+                inset 0 0 50px rgba(0,0,0,0.9),
+                0 0 100px rgba(0,0,0,0.8);
         }
 
-        .mystery-door::before {
+        .door::before {
             content: '';
             position: absolute;
-            right: 20px;
+            right: 15px;
             top: 50%;
-            transform: translateY(-50%);
-            width: 15px;
-            height: 15px;
-            background: #8B7355;
+            width: 12px;
+            height: 12px;
+            background: #5a4a3a;
             border-radius: 50%;
-            box-shadow: 0 0 10px rgba(139, 115, 85, 0.5);
         }
 
-        .mystery-door:hover {
-            box-shadow:
-                inset 0 0 50px rgba(0,0,0,0.8),
-                0 0 50px rgba(139, 0, 0, 0.5);
-        }
-
-        .door-light {
+        .door::after {
+            content: '';
             position: absolute;
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
             width: 80%;
-            height: 5px;
+            height: 3px;
             background: var(--flicker);
-            opacity: 0;
-            transition: opacity 0.3s;
-            box-shadow: 0 0 20px var(--flicker);
+            box-shadow: 0 0 20px var(--flicker), 0 0 40px var(--flicker);
+            animation: doorLight 2s infinite;
         }
 
-        .mystery-door:hover .door-light {
-            opacity: 0.8;
-            animation: lightFlicker 0.5s infinite;
+        .door.visible {
+            opacity: 1;
         }
 
-        @keyframes lightFlicker {
+        @keyframes doorLight {
             0%, 100% { opacity: 0.8; }
             50% { opacity: 0.4; }
         }
 
-        /* Telephone */
-        .telephone-ring {
-            position: fixed;
-            bottom: 30px;
-            right: 150px;
-            font-size: 2rem;
-            cursor: pointer;
-            animation: phoneRing 4s ease-in-out infinite;
-            z-index: 50;
-            filter: drop-shadow(0 0 10px var(--curtain-red));
+        /* Title Screen Special */
+        .title-screen .scene-text {
+            animation: titlePulse 4s ease-in-out infinite;
         }
 
-        @keyframes phoneRing {
-            0%, 90%, 100% { transform: rotate(0deg); }
-            92% { transform: rotate(-10deg); }
-            94% { transform: rotate(10deg); }
-            96% { transform: rotate(-10deg); }
-            98% { transform: rotate(10deg); }
+        @keyframes titlePulse {
+            0%, 100% { text-shadow: 0 0 30px rgba(139, 0, 0, 0.3); }
+            50% { text-shadow: 0 0 60px rgba(139, 0, 0, 0.6), 0 0 100px rgba(139, 0, 0, 0.3); }
         }
 
-        /* Message Popup */
-        .message-overlay {
+        /* Breathing */
+        .breathing {
+            animation: breathe 4s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* Loading */
+        #loading {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: none;
+            background: var(--void-black);
+            display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 10000;
+            z-index: 100000;
+            transition: opacity 1s;
         }
 
-        .message-content {
-            text-align: center;
-            padding: 3rem;
-            animation: messageAppear 0.5s ease;
-        }
-
-        @keyframes messageAppear {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .message-text {
-            font-size: 2rem;
-            font-family: 'Special Elite', cursive;
-            color: var(--curtain-red);
-            margin-bottom: 2rem;
-        }
-
-        .close-message {
-            background: none;
-            border: 1px solid var(--curtain-red);
-            color: var(--cream);
-            padding: 0.5rem 2rem;
-            font-family: 'Special Elite', cursive;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .close-message:hover {
-            background: var(--curtain-red);
-        }
-
-        /* Footer */
-        footer {
-            padding: 4rem 2rem;
-            text-align: center;
-            font-family: 'Special Elite', cursive;
-            font-size: 0.9rem;
-            color: rgba(245, 230, 211, 0.4);
-            position: relative;
-        }
-
-        footer::before {
-            content: '◆ ◆ ◆';
-            display: block;
-            margin-bottom: 2rem;
-            letter-spacing: 1rem;
-            color: var(--curtain-red);
-            opacity: 0.5;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .curtain-left, .curtain-right {
-                width: 40px;
-            }
-            main {
-                margin: 0 40px;
-            }
-            .telephone-ring {
-                right: 60px;
-            }
-        }
-
-        /* Hidden Messages */
-        .hidden-message {
-            position: absolute;
+        #loading.hidden {
             opacity: 0;
-            transition: opacity 2s;
-            font-family: 'Special Elite', cursive;
-            font-size: 0.8rem;
-            color: var(--curtain-red);
             pointer-events: none;
         }
 
-        .the-room:hover .hidden-message {
-            opacity: 0.3;
+        #loading p {
+            font-family: 'Special Elite', cursive;
+            animation: loadingPulse 1.5s infinite;
         }
 
-        /* Flickering Light */
-        .ceiling-light {
-            position: absolute;
-            top: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
-            height: 100px;
-            background: radial-gradient(circle, rgba(255,248,220,0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            animation: ceilingFlicker 8s infinite;
-        }
-
-        @keyframes ceilingFlicker {
+        @keyframes loadingPulse {
             0%, 100% { opacity: 0.3; }
-            5% { opacity: 0.1; }
-            10% { opacity: 0.4; }
-            15% { opacity: 0.2; }
-            20% { opacity: 0.5; }
-            25%, 95% { opacity: 0.3; }
+            50% { opacity: 1; }
         }
-
-        /* Dripping effect */
-        .drip {
-            position: absolute;
-            width: 2px;
-            height: 0;
-            background: var(--blood-red);
-            animation: drip 8s infinite;
-        }
-
-        @keyframes drip {
-            0% { height: 0; opacity: 1; top: 0; }
-            70% { height: 100px; opacity: 1; top: 0; }
-            100% { height: 100px; opacity: 0; top: 50px; }
-        }
-
-        .drip:nth-child(1) { left: 20%; animation-delay: 0s; }
-        .drip:nth-child(2) { left: 80%; animation-delay: 3s; }
-        .drip:nth-child(3) { left: 50%; animation-delay: 6s; }
     </style>
 </head>
 <body>
+    <div id="loading"><p>click anywhere to begin...</p></div>
+
     <div class="static-overlay"></div>
-    <div class="scanlines"></div>
+    <div class="vignette"></div>
+    <div class="flash-overlay" id="flash"></div>
 
-    <div class="curtain-left"></div>
-    <div class="curtain-right"></div>
+    <div class="curtains hidden" id="curtains">
+        <div class="curtain-left"></div>
+        <div class="curtain-right"></div>
+    </div>
 
-    <main>
-        <!-- The Room -->
-        <section class="the-room">
-            <div class="ceiling-light"></div>
-            <div class="drip"></div>
-            <div class="drip"></div>
-            <div class="drip"></div>
+    <div class="chevron-floor" id="chevronFloor"></div>
 
-            <span class="floating-element owl">🦉</span>
-            <span class="floating-element coffee">☕</span>
-            <span class="floating-element log">🪵</span>
-            <span class="floating-element key">🗝️</span>
+    <div class="bg-effect" id="bgEffect"></div>
 
-            <div class="title-container">
-                <h1 class="main-title glitch-text" data-text="ENTER">ENTER</h1>
-                <p class="subtitle">
-                    <span class="backwards-text">through the darkness of future past</span>
-                </p>
-            </div>
+    <div class="floating-symbol" id="floatingSymbol" style="top: 20%; left: 15%;">🦉</div>
+    <div class="silhouette" id="silhouette">🚶</div>
+    <div class="door" id="door"></div>
 
-            <span class="hidden-message" style="top: 30%; left: 20%;">fire walk with me</span>
-            <span class="hidden-message" style="bottom: 20%; right: 20%;">the owls are not what they seem</span>
-        </section>
+    <button class="audio-control" id="audioBtn">♪ SOUND ON</button>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="scene-counter" id="sceneCounter"></div>
 
-        <!-- The Message -->
-        <section class="mystery-section">
-            <div class="section-content">
-                <h2 class="cryptic-heading">The Magician Longs to See</h2>
-                <div class="mystery-text">
-                    <p>Between two worlds, life flows. Like a river. Between two worlds, is the magician.</p>
-                    <p>One chants out between two worlds... <span class="glitch-text" data-text="FIRE WALK WITH ME">FIRE WALK WITH ME</span></p>
-                    <p>The black dog runs at night. Sniffing out that which cannot be smelled. It seeks the darkness. It seeks the void.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- The Diner -->
-        <section class="mystery-section diner-section">
-            <div class="section-content">
-                <h2 class="cryptic-heading">The Double R</h2>
-                <div class="mystery-text">
-                    <p>Damn fine coffee. And hot.</p>
-                </div>
-                <div class="menu">
-                    <div class="menu-item">
-                        <span class="menu-item-name">Coffee, Black as Midnight on a Moonless Night</span>
-                        <span class="menu-item-price">$?.??</span>
-                    </div>
-                    <div class="menu-item">
-                        <span class="menu-item-name">Cherry Pie (Slice of Heaven)</span>
-                        <span class="menu-item-price">$?.??</span>
-                    </div>
-                    <div class="menu-item">
-                        <span class="menu-item-name">Fish in the Percolator</span>
-                        <span class="menu-item-price">FREE</span>
-                    </div>
-                    <div class="menu-item">
-                        <span class="menu-item-name">The Owls Are Not What They Seem</span>
-                        <span class="menu-item-price">∞</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- The Lodge -->
-        <section class="mystery-section lodge-section">
-            <div class="chevron-floor"></div>
-            <div class="section-content">
-                <h2 class="cryptic-heading">The Waiting Room</h2>
-
-                <div class="quote-container">
-                    <p class="quote-text">"When you see me again, it won't be me."</p>
-                    <p class="quote-author">— The Man From Another Place</p>
-                </div>
-
-                <div class="mystery-text">
-                    <p>Is it future? Or is it past?</p>
-                    <p class="backwards-text">Meanwhile...</p>
-                </div>
-
-                <div class="mystery-door" onclick="openDoor()">
-                    <div class="door-light"></div>
-                </div>
-                <p style="text-align: center; font-family: 'Special Elite', cursive; opacity: 0.5;">click to enter</p>
-            </div>
-        </section>
-
-        <!-- The Dream -->
-        <section class="mystery-section">
-            <div class="section-content">
-                <h2 class="cryptic-heading">Last Night I Had The Strangest Dream</h2>
-                <div class="mystery-text">
-                    <p>I was in a red room. With a dwarf. He spoke, but the words... they came out differently. Backwards. Or was I backwards?</p>
-                    <p>She's filled with secrets.</p>
-                    <p>Where we're from, the birds sing a pretty song... and there's always music in the air.</p>
-                </div>
-
-                <div class="quote-container">
-                    <p class="quote-text">"I've got good news. That gum you like is going to come back in style."</p>
-                    <p class="quote-author">— The Giant</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- The Warning -->
-        <section class="mystery-section">
-            <div class="section-content">
-                <h2 class="cryptic-heading">⚠ WARNING ⚠</h2>
-                <div class="mystery-text" style="text-align: center;">
-                    <p>DO NOT LOOK FOR THE OWL CAVE</p>
-                    <p style="opacity: 0.5; font-size: 0.9rem;">(unless you must)</p>
-                    <p><br></p>
-                    <p style="letter-spacing: 0.5em;">BOB</p>
-                    <p style="letter-spacing: 0.5em;">IS</p>
-                    <p style="letter-spacing: 0.5em;">HUNGRY</p>
-                </div>
-            </div>
-        </section>
-
-        <footer>
-            <p>THROUGH THE DARKNESS OF FUTURE PAST</p>
-            <p>THE MAGICIAN LONGS TO SEE</p>
-            <p>ONE CHANTS OUT BETWEEN TWO WORLDS</p>
-            <p style="margin-top: 2rem; color: var(--curtain-red);">FIRE WALK WITH ME</p>
-            <p style="margin-top: 3rem; opacity: 0.3;">© ???? — Time is a flat circle in the Black Lodge</p>
-        </footer>
-    </main>
-
-    <!-- Phone -->
-    <div class="telephone-ring" onclick="answerPhone()">📞</div>
-
-    <!-- Message Overlay -->
-    <div class="message-overlay" id="messageOverlay">
-        <div class="message-content">
-            <p class="message-text" id="messageText"></p>
-            <button class="close-message" onclick="closeMessage()">wake up</button>
+    <div class="scene-container" id="sceneContainer">
+        <div class="scene-content">
+            <p class="scene-text" id="sceneText"></p>
         </div>
     </div>
 
+    <div class="click-prompt" id="clickPrompt">click to continue</div>
+
     <script>
-        // Cryptic messages for various interactions
-        const phoneMessages = [
-            "There's a man... in a smiling bag.",
-            "The owls are not what they seem.",
-            "She's dead. Wrapped in plastic.",
-            "It is happening again.",
-            "I'll see you again in 25 years.",
-            "Meanwhile...",
-            "Through the darkness of future past, the magician longs to see.",
-            "There's a fish in the percolator.",
-            "Diane, I'm holding in my hand a small box of chocolate bunnies."
+        // ============================================
+        // STORY SCENES
+        // ============================================
+        const scenes = [
+            // ACT 1: THE BEGINNING
+            { text: "THE BLACK LODGE", classes: "large red", bg: "", curtains: false, floor: false, symbol: "", duration: 0 },
+            { text: "A story in the dark", classes: "small", bg: "", curtains: false, floor: false },
+            { text: "Based on a dream I cannot remember", classes: "small typewriter", bg: "" },
+            { text: "•", classes: "large", bg: "", pause: true },
+
+            // THE FOREST
+            { text: "It begins, as it always does, in the woods.", classes: "", bg: "forest" },
+            { text: "The Douglas firs stretch endlessly into a sky that hasn't seen stars in weeks.", classes: "", bg: "forest" },
+            { text: "You've been walking for hours.", classes: "", bg: "forest" },
+            { text: "Or has it been days?", classes: "", bg: "forest" },
+            { text: "Time moves differently here.", classes: "typewriter", bg: "forest" },
+            { text: "The owls watch from branches you cannot see.", classes: "", bg: "forest", symbol: "🦉" },
+            { text: "THE OWLS ARE NOT WHAT THEY SEEM", classes: "large red", bg: "forest", symbol: "🦉" },
+            { text: "But you already knew that.", classes: "small", bg: "forest" },
+
+            // THE SIGN
+            { text: "A sign appears between the trees.", classes: "", bg: "forest" },
+            { text: "WELCOME TO TWIN PEAKS", classes: "large typewriter", bg: "forest" },
+            { text: "Population: 51,201", classes: "typewriter small", bg: "forest" },
+            { text: "The last digit flickers.", classes: "", bg: "forest" },
+            { text: "51,200", classes: "typewriter", bg: "forest" },
+            { text: "Someone has just died.", classes: "red", bg: "forest" },
+
+            // THE BODY
+            { text: "•", classes: "large", bg: "", pause: true },
+            { text: "Down by the river, wrapped in plastic.", classes: "", bg: "blue" },
+            { text: "She is beautiful.", classes: "", bg: "blue" },
+            { text: "She is dead.", classes: "red", bg: "blue" },
+            { text: "Her name was Laura Palmer.", classes: "", bg: "blue" },
+            { text: "Her name IS Laura Palmer.", classes: "typewriter", bg: "blue" },
+            { text: "Time moves differently here.", classes: "small", bg: "blue" },
+
+            // THE DINER
+            { text: "•", classes: "large", bg: "", pause: true },
+            { text: "You need coffee.", classes: "", bg: "" },
+            { text: "Black as midnight on a moonless night.", classes: "typewriter", bg: "" },
+            { text: "The Double R Diner appears before you.", classes: "", bg: "" },
+            { text: "It was always there.", classes: "small", bg: "" },
+            { text: "A cherry pie sits under glass.", classes: "", bg: "" },
+            { text: "It has been there for 25 years.", classes: "", bg: "" },
+            { text: "It is still warm.", classes: "red", bg: "" },
+            { text: "The waitress smiles.", classes: "", bg: "" },
+            { text: "Her eyes do not.", classes: "", bg: "" },
+            { text: "\"There's a fish in the percolator.\"", classes: "typewriter", bg: "" },
+            { text: "You don't ask what she means.", classes: "small", bg: "" },
+
+            // THE DREAM
+            { text: "•", classes: "large", bg: "", pause: true },
+            { text: "That night, you dream.", classes: "", bg: "red" },
+            { text: "You are in a room.", classes: "", bg: "red", curtains: true },
+            { text: "The walls are red velvet.", classes: "", bg: "red", curtains: true },
+            { text: "The floor is chevron.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "A small man sits in a chair.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "He speaks, but the words come out wrong.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: ".sdrawkcab", classes: "backwards large", bg: "red", curtains: true, floor: true },
+            { text: "\"Where we're from, the birds sing a pretty song.\"", classes: "typewriter backwards", bg: "red", curtains: true, floor: true },
+            { text: "\"And there's always music in the air.\"", classes: "typewriter backwards", bg: "red", curtains: true, floor: true },
+            { text: "He begins to dance.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "The music has no source.", classes: "small", bg: "red", curtains: true, floor: true },
+            { text: "A woman appears.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "She looks like Laura Palmer.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "\"I am Laura Palmer.\"", classes: "typewriter", bg: "red", curtains: true, floor: true },
+            { text: "\"I AM LAURA PALMER.\"", classes: "large red", bg: "red", curtains: true, floor: true },
+            { text: "She leans close and whispers:", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "\"My father killed me.\"", classes: "typewriter red", bg: "red", curtains: true, floor: true },
+
+            // THE AWAKENING
+            { text: "•", classes: "large", bg: "", pause: true, curtains: false, floor: false },
+            { text: "You wake.", classes: "", bg: "" },
+            { text: "Or do you?", classes: "small", bg: "" },
+            { text: "The motel room is dark.", classes: "", bg: "" },
+            { text: "The television is on.", classes: "", bg: "" },
+            { text: "There is no picture, only static.", classes: "", bg: "static" },
+            { text: "A voice speaks from the white noise.", classes: "", bg: "static" },
+            { text: "\"IT IS HAPPENING AGAIN.\"", classes: "large red glitch", bg: "static", flash: true },
+            { text: "The room shakes.", classes: "", bg: "" },
+            { text: "The lights flicker and die.", classes: "", bg: "" },
+            { text: "In the darkness, you hear breathing.", classes: "", bg: "" },
+            { text: "It is not your own.", classes: "red", bg: "" },
+
+            // BOB
+            { text: "•", classes: "large", bg: "", pause: true },
+            { text: "BOB", classes: "large red glitch", bg: "fire" },
+            { text: "You've heard the name before.", classes: "", bg: "fire" },
+            { text: "In whispers.", classes: "small", bg: "fire" },
+            { text: "In screams.", classes: "small", bg: "fire" },
+            { text: "He is not a man.", classes: "", bg: "fire" },
+            { text: "He wears men like suits.", classes: "", bg: "fire" },
+            { text: "He feeds on fear.", classes: "", bg: "fire" },
+            { text: "And pain.", classes: "red", bg: "fire" },
+            { text: "\"CATCH YOU WITH MY DEATH BAG\"", classes: "large typewriter glitch", bg: "fire" },
+            { text: "The room fills with the smell of burning oil.", classes: "", bg: "fire" },
+            { text: "You run.", classes: "", bg: "" },
+
+            // THE ROAD
+            { text: "•", classes: "large", bg: "", pause: true },
+            { text: "The highway stretches into nothing.", classes: "", bg: "" },
+            { text: "Your headlights illuminate only twenty feet ahead.", classes: "", bg: "" },
+            { text: "Beyond that: void.", classes: "", bg: "" },
+            { text: "The radio speaks:", classes: "", bg: "" },
+            { text: "\"This is the water.\"", classes: "typewriter", bg: "blue" },
+            { text: "\"And this is the well.\"", classes: "typewriter", bg: "blue" },
+            { text: "\"Drink full and descend.\"", classes: "typewriter", bg: "blue" },
+            { text: "\"The horse is the white of the eyes.\"", classes: "typewriter", bg: "blue" },
+            { text: "\"And dark within.\"", classes: "typewriter red", bg: "blue" },
+            { text: "You do not understand.", classes: "small", bg: "" },
+            { text: "You were not meant to.", classes: "small", bg: "" },
+
+            // THE GIANT
+            { text: "•", classes: "large", bg: "", pause: true },
+            { text: "A figure appears in the road.", classes: "", bg: "" },
+            { text: "He is impossibly tall.", classes: "", bg: "" },
+            { text: "He raises one hand.", classes: "", bg: "" },
+            { text: "\"I will tell you three things.\"", classes: "typewriter", bg: "" },
+            { text: "\"There is a man in a smiling bag.\"", classes: "typewriter", bg: "" },
+            { text: "\"The owls are at the roadhouse.\"", classes: "typewriter", bg: "", symbol: "🦉" },
+            { text: "\"Without chemicals, he points.\"", classes: "typewriter", bg: "" },
+            { text: "\"I have told you these things because you asked.\"", classes: "typewriter", bg: "" },
+            { text: "You did not ask.", classes: "small", bg: "" },
+            { text: "\"Yes. You did.\"", classes: "typewriter red", bg: "" },
+            { text: "He vanishes.", classes: "", bg: "" },
+            { text: "The road vanishes with him.", classes: "", bg: "" },
+
+            // THE RETURN
+            { text: "•", classes: "large", bg: "", pause: true },
+            { text: "You are in the woods again.", classes: "", bg: "forest" },
+            { text: "You never left.", classes: "small", bg: "forest" },
+            { text: "Between the trees, you see a door.", classes: "", bg: "forest", door: true },
+            { text: "It stands alone, connected to nothing.", classes: "", bg: "forest", door: true },
+            { text: "Red velvet is visible through the crack.", classes: "", bg: "forest", door: true },
+            { text: "You know what lies beyond.", classes: "", bg: "forest", door: true },
+            { text: "You have always known.", classes: "small", bg: "forest", door: true },
+            { text: "The handle is warm to the touch.", classes: "", bg: "forest", door: true },
+            { text: "You open the door.", classes: "red", bg: "forest", door: true },
+
+            // THE BLACK LODGE
+            { text: "•", classes: "large", bg: "red", pause: true, curtains: true, floor: true, door: false },
+            { text: "THE WAITING ROOM", classes: "large", bg: "red", curtains: true, floor: true },
+            { text: "The curtains breathe.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "They are alive.", classes: "small", bg: "red", curtains: true, floor: true },
+            { text: "Every version of you that ever existed is here.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "They sit in identical chairs.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "They all look at you.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "They all speak at once:", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "\"IS IT FUTURE OR IS IT PAST?\"", classes: "large backwards", bg: "red", curtains: true, floor: true },
+            { text: "You do not know.", classes: "small", bg: "red", curtains: true, floor: true },
+            { text: "The answer is:", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "Yes.", classes: "large red", bg: "red", curtains: true, floor: true },
+
+            // THE DOPPELGANGER
+            { text: "•", classes: "large", bg: "red", pause: true, curtains: true, floor: true },
+            { text: "A figure approaches.", classes: "", bg: "red", curtains: true, floor: true, silhouette: true },
+            { text: "It wears your face.", classes: "", bg: "red", curtains: true, floor: true, silhouette: true },
+            { text: "But the eyes are wrong.", classes: "", bg: "red", curtains: true, floor: true, silhouette: true },
+            { text: "They are completely white.", classes: "", bg: "red", curtains: true, floor: true, silhouette: true },
+            { text: "Your doppelganger smiles.", classes: "", bg: "red", curtains: true, floor: true, silhouette: true },
+            { text: "\"When you see me again, it won't be me.\"", classes: "typewriter", bg: "red", curtains: true, floor: true, silhouette: true },
+            { text: "It reaches for your hand.", classes: "", bg: "red", curtains: true, floor: true, silhouette: true },
+            { text: "You run.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "The curtains go on forever.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "There is no exit.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "There was never an exit.", classes: "small", bg: "red", curtains: true, floor: true },
+
+            // THE REVELATION
+            { text: "•", classes: "large", bg: "", pause: true, curtains: false, floor: false },
+            { text: "You stop running.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "You understand now.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "The Lodge is not a place.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "It is a state of being.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "You have always been here.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "You will always be here.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "Time is a flat circle.", classes: "typewriter", bg: "red", curtains: true, floor: true },
+            { text: "The circle is the Lodge.", classes: "typewriter", bg: "red", curtains: true, floor: true },
+            { text: "The Lodge is you.", classes: "typewriter red", bg: "red", curtains: true, floor: true },
+
+            // THE LAST MESSAGE
+            { text: "•", classes: "large", bg: "", pause: true },
+            { text: "Laura Palmer appears one final time.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "She removes her face.", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "Beneath it is blinding white light.", classes: "", bg: "red", curtains: true, floor: true, flash: true },
+            { text: "She speaks in a voice that is every voice:", classes: "", bg: "red", curtains: true, floor: true },
+            { text: "\"I'll see you again in 25 years.\"", classes: "typewriter", bg: "red", curtains: true, floor: true },
+            { text: "\"Meanwhile...\"", classes: "typewriter large red", bg: "red", curtains: true, floor: true },
+
+            // THE END
+            { text: "•", classes: "large", bg: "", pause: true, curtains: false, floor: false },
+            { text: "You wake up.", classes: "", bg: "" },
+            { text: "You are in your bedroom.", classes: "", bg: "" },
+            { text: "The clock reads 2:53 AM.", classes: "typewriter", bg: "" },
+            { text: "It has always read 2:53 AM.", classes: "small", bg: "" },
+            { text: "Outside, an owl calls.", classes: "", bg: "forest", symbol: "🦉" },
+            { text: "You do not look.", classes: "", bg: "forest", symbol: "🦉" },
+            { text: "You already know what you would see.", classes: "small", bg: "forest", symbol: "🦉" },
+
+            // FINALE
+            { text: "•", classes: "large", bg: "", pause: true },
+            { text: "WE LIVE INSIDE A DREAM", classes: "large", bg: "" },
+            { text: "The dreamer dreams.", classes: "", bg: "" },
+            { text: "And the dreamer lives inside the dream.", classes: "", bg: "" },
+            { text: "But who is the dreamer?", classes: "", bg: "" },
+            { text: "...", classes: "large", bg: "" },
+            { text: "FIRE WALK WITH ME", classes: "large red", bg: "fire" },
+            { text: "•", classes: "large", bg: "", pause: true },
+            { text: "THE END", classes: "large", bg: "" },
+            { text: "...or is it?", classes: "small", bg: "" },
+            { text: "Click to return to the beginning.", classes: "small typewriter", bg: "", final: true },
         ];
 
-        const doorMessages = [
-            "When you see me again, it won't be me.",
-            "Is it future? Or is it past?",
-            "I am the arm.",
-            "This is the water, and this is the well.",
-            "Gotta light?",
-            "We're not going to talk about Judy.",
-            "Find Laura.",
-            "My log has something to tell you."
-        ];
+        // ============================================
+        // AUDIO ENGINE
+        // ============================================
+        let audioContext = null;
+        let audioEnabled = false;
+        let droneOsc = null;
+        let droneGain = null;
+        let lfoOsc = null;
 
-        function showMessage(message) {
-            document.getElementById('messageText').textContent = message;
-            document.getElementById('messageOverlay').style.display = 'flex';
+        function initAudio() {
+            if (audioContext) return;
+
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            // Main drone
+            droneGain = audioContext.createGain();
+            droneGain.gain.value = 0;
+            droneGain.connect(audioContext.destination);
+
+            // Base drone oscillator
+            droneOsc = audioContext.createOscillator();
+            droneOsc.type = 'sine';
+            droneOsc.frequency.value = 55; // Low A
+
+            // Second oscillator for richness
+            const drone2 = audioContext.createOscillator();
+            drone2.type = 'sine';
+            drone2.frequency.value = 82.5; // E
+
+            // Third oscillator - very low
+            const drone3 = audioContext.createOscillator();
+            drone3.type = 'sine';
+            drone3.frequency.value = 36.7; // Low D
+
+            // LFO for subtle modulation
+            lfoOsc = audioContext.createOscillator();
+            lfoOsc.type = 'sine';
+            lfoOsc.frequency.value = 0.1;
+
+            const lfoGain = audioContext.createGain();
+            lfoGain.gain.value = 3;
+
+            lfoOsc.connect(lfoGain);
+            lfoGain.connect(droneOsc.frequency);
+
+            // Filter for warmth
+            const filter = audioContext.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 200;
+            filter.Q.value = 1;
+
+            droneOsc.connect(filter);
+            drone2.connect(filter);
+            drone3.connect(filter);
+            filter.connect(droneGain);
+
+            droneOsc.start();
+            drone2.start();
+            drone3.start();
+            lfoOsc.start();
         }
 
-        function closeMessage() {
-            document.getElementById('messageOverlay').style.display = 'none';
+        function setAudioMood(mood) {
+            if (!audioContext || !audioEnabled) return;
+
+            const now = audioContext.currentTime;
+
+            switch(mood) {
+                case 'forest':
+                    droneOsc.frequency.linearRampToValueAtTime(45, now + 2);
+                    break;
+                case 'red':
+                    droneOsc.frequency.linearRampToValueAtTime(65, now + 2);
+                    break;
+                case 'fire':
+                    droneOsc.frequency.linearRampToValueAtTime(80, now + 1);
+                    lfoOsc.frequency.linearRampToValueAtTime(0.5, now + 1);
+                    break;
+                case 'static':
+                    droneOsc.frequency.linearRampToValueAtTime(100, now + 0.5);
+                    break;
+                case 'blue':
+                    droneOsc.frequency.linearRampToValueAtTime(50, now + 2);
+                    break;
+                default:
+                    droneOsc.frequency.linearRampToValueAtTime(55, now + 2);
+                    lfoOsc.frequency.linearRampToValueAtTime(0.1, now + 2);
+            }
         }
 
-        function answerPhone() {
-            const message = phoneMessages[Math.floor(Math.random() * phoneMessages.length)];
-            showMessage(message);
+        function toggleAudio() {
+            if (!audioContext) initAudio();
+
+            audioEnabled = !audioEnabled;
+            const btn = document.getElementById('audioBtn');
+
+            if (audioEnabled) {
+                audioContext.resume();
+                droneGain.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + 1);
+                btn.textContent = '♪ SOUND OFF';
+            } else {
+                droneGain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
+                btn.textContent = '♪ SOUND ON';
+            }
         }
 
-        function openDoor() {
-            const message = doorMessages[Math.floor(Math.random() * doorMessages.length)];
-            showMessage(message);
+        // ============================================
+        // SCENE ENGINE
+        // ============================================
+        let currentScene = -1;
+        let isTransitioning = false;
+        let started = false;
+
+        const elements = {
+            loading: document.getElementById('loading'),
+            container: document.getElementById('sceneContainer'),
+            text: document.getElementById('sceneText'),
+            progress: document.getElementById('progressBar'),
+            counter: document.getElementById('sceneCounter'),
+            curtains: document.getElementById('curtains'),
+            floor: document.getElementById('chevronFloor'),
+            bgEffect: document.getElementById('bgEffect'),
+            symbol: document.getElementById('floatingSymbol'),
+            flash: document.getElementById('flash'),
+            silhouette: document.getElementById('silhouette'),
+            door: document.getElementById('door'),
+            clickPrompt: document.getElementById('clickPrompt')
+        };
+
+        function updateProgress() {
+            const progress = ((currentScene + 1) / scenes.length) * 100;
+            elements.progress.style.width = progress + '%';
+            elements.counter.textContent = `${currentScene + 1} / ${scenes.length}`;
         }
 
-        // Random flicker effect on title
-        const title = document.querySelector('.main-title');
-        setInterval(() => {
-            if (Math.random() < 0.1) {
-                title.style.opacity = '0.7';
+        function applySceneEffects(scene) {
+            // Background
+            elements.bgEffect.className = 'bg-effect';
+            if (scene.bg) {
+                elements.bgEffect.classList.add('bg-' + scene.bg);
+                setAudioMood(scene.bg);
+            } else {
+                setAudioMood('default');
+            }
+
+            // Curtains
+            if (scene.curtains) {
+                elements.curtains.classList.remove('hidden');
+            } else {
+                elements.curtains.classList.add('hidden');
+            }
+
+            // Floor
+            if (scene.floor) {
+                elements.floor.classList.add('visible');
+            } else {
+                elements.floor.classList.remove('visible');
+            }
+
+            // Symbol
+            if (scene.symbol) {
+                elements.symbol.textContent = scene.symbol;
+                elements.symbol.classList.add('visible');
+            } else {
+                elements.symbol.classList.remove('visible');
+            }
+
+            // Door
+            if (scene.door) {
+                elements.door.classList.add('visible');
+            } else {
+                elements.door.classList.remove('visible');
+            }
+
+            // Silhouette
+            if (scene.silhouette) {
+                elements.silhouette.classList.add('visible');
+            } else {
+                elements.silhouette.classList.remove('visible');
+            }
+
+            // Flash
+            if (scene.flash) {
+                elements.flash.style.opacity = '1';
                 setTimeout(() => {
-                    title.style.opacity = '1';
-                }, 50);
-            }
-        }, 3000);
-
-        // Cursor trail effect
-        document.addEventListener('mousemove', (e) => {
-            if (Math.random() < 0.02) {
-                const spark = document.createElement('div');
-                spark.style.cssText = `
-                    position: fixed;
-                    left: ${e.clientX}px;
-                    top: ${e.clientY}px;
-                    width: 4px;
-                    height: 4px;
-                    background: ${Math.random() < 0.5 ? 'var(--curtain-red)' : 'var(--cream)'};
-                    border-radius: 50%;
-                    pointer-events: none;
-                    z-index: 9997;
-                    opacity: 0.5;
-                    animation: sparkFade 1s forwards;
-                `;
-                document.body.appendChild(spark);
-                setTimeout(() => spark.remove(), 1000);
-            }
-        });
-
-        // Add spark fade animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes sparkFade {
-                to { opacity: 0; transform: translateY(20px); }
-            }
-        `;
-        document.head.appendChild(style);
-
-        // Easter egg: Konami code reveals hidden message
-        let konamiCode = [];
-        const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
-
-        document.addEventListener('keydown', (e) => {
-            konamiCode.push(e.key);
-            konamiCode = konamiCode.slice(-10);
-            if (konamiCode.join('') === konamiSequence.join('')) {
-                showMessage("WE LIVE INSIDE A DREAM");
-            }
-        });
-
-        // Occasional screen distortion
-        setInterval(() => {
-            if (Math.random() < 0.05) {
-                document.body.style.transform = `translateX(${Math.random() * 4 - 2}px)`;
-                setTimeout(() => {
-                    document.body.style.transform = 'none';
+                    elements.flash.style.opacity = '0';
                 }, 100);
             }
-        }, 5000);
+        }
 
-        // Clock that shows wrong time
-        console.log('%c2:53', 'font-size: 50px; color: #8B0000; font-family: monospace;');
-        console.log('%cIt is happening again.', 'color: #722F37; font-style: italic;');
+        function showScene(index) {
+            if (index >= scenes.length) {
+                index = 0; // Loop back
+            }
+
+            if (isTransitioning) return;
+            isTransitioning = true;
+
+            const scene = scenes[index];
+
+            // Fade out
+            elements.container.classList.add('fade-out');
+            elements.container.classList.remove('active');
+
+            setTimeout(() => {
+                // Update content
+                elements.text.textContent = scene.text;
+                elements.text.className = 'scene-text ' + (scene.classes || '');
+
+                // Apply effects
+                applySceneEffects(scene);
+
+                // Fade in
+                elements.container.classList.remove('fade-out');
+                elements.container.classList.add('active');
+
+                currentScene = index;
+                updateProgress();
+
+                isTransitioning = false;
+            }, 800);
+        }
+
+        function nextScene() {
+            if (!started) {
+                started = true;
+                elements.loading.classList.add('hidden');
+                initAudio();
+                showScene(0);
+                return;
+            }
+
+            if (isTransitioning) return;
+
+            const nextIndex = currentScene + 1;
+            if (nextIndex >= scenes.length) {
+                showScene(0);
+            } else {
+                showScene(nextIndex);
+            }
+        }
+
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+        document.body.addEventListener('click', (e) => {
+            if (e.target.id === 'audioBtn') return;
+            nextScene();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'Enter' || e.code === 'ArrowRight') {
+                e.preventDefault();
+                nextScene();
+            }
+            if (e.code === 'ArrowLeft' && currentScene > 0) {
+                showScene(currentScene - 1);
+            }
+        });
+
+        document.getElementById('audioBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleAudio();
+        });
+
+        // Prevent context menu
+        document.addEventListener('contextmenu', e => e.preventDefault());
     </script>
 </body>
 </html>
