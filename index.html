@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Owls Are Not What They Seem</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --blood-red: #8B0000;
+            --curtain-red: #722F37;
+            --void-black: #0a0a0a;
+            --smoke: #1a1a1a;
+            --cream: #f5e6d3;
+            --flicker: #fff8dc;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--void-black);
+            color: var(--cream);
+            font-family: 'Playfair Display', serif;
+            overflow-x: hidden;
+            cursor: crosshair;
+        }
+
+        /* TV Static Overlay */
+        .static-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
+            animation: staticFlicker 0.1s infinite;
+        }
+
+        @keyframes staticFlicker {
+            0%, 100% { opacity: 0.02; }
+            50% { opacity: 0.04; }
+        }
+
+        /* Scanlines */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9998;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+        }
+
+        /* Red Curtains */
+        .curtain-left, .curtain-right {
+            position: fixed;
+            top: 0;
+            width: 120px;
+            height: 100%;
+            background: linear-gradient(90deg,
+                var(--blood-red) 0%,
+                var(--curtain-red) 30%,
+                #4a1c1c 60%,
+                var(--void-black) 100%
+            );
+            z-index: 100;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
+        }
+
+        .curtain-left {
+            left: 0;
+            animation: curtainSway 8s ease-in-out infinite;
+        }
+
+        .curtain-right {
+            right: 0;
+            transform: scaleX(-1);
+            animation: curtainSway 8s ease-in-out infinite reverse;
+        }
+
+        .curtain-left::before, .curtain-right::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent 0px,
+                rgba(0,0,0,0.3) 5px,
+                transparent 10px
+            );
+        }
+
+        @keyframes curtainSway {
+            0%, 100% { transform: scaleX(1); }
+            50% { transform: scaleX(1.02); }
+        }
+
+        /* Main Content */
+        main {
+            margin: 0 120px;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Hero Section - The Room */
+        .the-room {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background:
+                radial-gradient(ellipse at center, var(--smoke) 0%, var(--void-black) 70%);
+        }
+
+        .the-room::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 35px,
+                    rgba(20,20,20,0.5) 35px,
+                    rgba(20,20,20,0.5) 70px
+                );
+            opacity: 0.3;
+        }
+
+        .title-container {
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .main-title {
+            font-size: clamp(2rem, 8vw, 6rem);
+            font-weight: 400;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--cream);
+            text-shadow:
+                0 0 10px rgba(139, 0, 0, 0.5),
+                0 0 20px rgba(139, 0, 0, 0.3),
+                0 0 40px rgba(139, 0, 0, 0.2);
+            animation: titleFlicker 4s ease-in-out infinite;
+            margin-bottom: 2rem;
+        }
+
+        @keyframes titleFlicker {
+            0%, 100% { opacity: 1; }
+            92% { opacity: 1; }
+            93% { opacity: 0.8; }
+            94% { opacity: 1; }
+            96% { opacity: 0.9; }
+            97% { opacity: 1; }
+        }
+
+        .subtitle {
+            font-family: 'Special Elite', cursive;
+            font-size: clamp(0.8rem, 2vw, 1.2rem);
+            letter-spacing: 0.5em;
+            color: var(--curtain-red);
+            opacity: 0.8;
+        }
+
+        .backwards-text {
+            font-style: italic;
+            direction: rtl;
+            unicode-bidi: bidi-override;
+        }
+
+        /* Floating Elements */
+        .floating-element {
+            position: absolute;
+            opacity: 0.1;
+            font-size: 4rem;
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .owl { top: 20%; left: 10%; animation-delay: 0s; }
+        .coffee { top: 60%; right: 15%; animation-delay: -5s; }
+        .log { bottom: 20%; left: 20%; animation-delay: -10s; }
+        .key { top: 40%; right: 25%; animation-delay: -15s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.1; }
+            25% { transform: translateY(-20px) rotate(5deg); opacity: 0.15; }
+            50% { transform: translateY(0) rotate(0deg); opacity: 0.1; }
+            75% { transform: translateY(20px) rotate(-5deg); opacity: 0.05; }
+        }
+
+        /* Mystery Sections */
+        .mystery-section {
+            min-height: 100vh;
+            padding: 4rem 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+
+        .mystery-section:nth-child(even) {
+            background: linear-gradient(180deg, var(--void-black), var(--smoke), var(--void-black));
+        }
+
+        .section-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cryptic-heading {
+            font-size: clamp(1.5rem, 4vw, 3rem);
+            margin-bottom: 2rem;
+            color: var(--curtain-red);
+            position: relative;
+            display: inline-block;
+        }
+
+        .cryptic-heading::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 60%;
+            height: 1px;
+            background: linear-gradient(90deg, var(--curtain-red), transparent);
+        }
+
+        .mystery-text {
+            font-size: 1.1rem;
+            line-height: 2;
+            opacity: 0.9;
+            font-family: 'Special Elite', cursive;
+        }
+
+        .mystery-text p {
+            margin-bottom: 1.5rem;
+        }
+
+        .glitch-text {
+            position: relative;
+            display: inline-block;
+        }
+
+        .glitch-text::before,
+        .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch-text::before {
+            left: 2px;
+            text-shadow: -2px 0 var(--blood-red);
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim-1 2s infinite linear alternate-reverse;
+        }
+
+        .glitch-text::after {
+            left: -2px;
+            text-shadow: 2px 0 #00ffff;
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim-2 2s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { clip: rect(51px, 9999px, 28px, 0); }
+            20% { clip: rect(70px, 9999px, 63px, 0); }
+            40% { clip: rect(26px, 9999px, 97px, 0); }
+            60% { clip: rect(62px, 9999px, 17px, 0); }
+            80% { clip: rect(43px, 9999px, 85px, 0); }
+            100% { clip: rect(87px, 9999px, 38px, 0); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(13px, 9999px, 74px, 0); }
+            20% { clip: rect(33px, 9999px, 95px, 0); }
+            40% { clip: rect(81px, 9999px, 29px, 0); }
+            60% { clip: rect(45px, 9999px, 66px, 0); }
+            80% { clip: rect(9px, 9999px, 54px, 0); }
+            100% { clip: rect(72px, 9999px, 41px, 0); }
+        }
+
+        /* The Diner */
+        .diner-section {
+            background:
+                linear-gradient(rgba(10,10,10,0.9), rgba(10,10,10,0.9)),
+                repeating-linear-gradient(
+                    0deg,
+                    #1a1a1a 0px,
+                    #1a1a1a 2px,
+                    #222 2px,
+                    #222 4px
+                );
+        }
+
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 1rem 0;
+            border-bottom: 1px dotted rgba(245, 230, 211, 0.2);
+        }
+
+        .menu-item-name {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 1.3rem;
+        }
+
+        .menu-item-price {
+            font-family: 'Special Elite', cursive;
+            color: var(--curtain-red);
+        }
+
+        /* The Lodge */
+        .lodge-section {
+            background:
+                linear-gradient(180deg, var(--void-black), #1a0505, var(--void-black));
+        }
+
+        .chevron-floor {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background: repeating-linear-gradient(
+                90deg,
+                #1a1a1a 0px,
+                #1a1a1a 25px,
+                #f5e6d3 25px,
+                #f5e6d3 50px
+            );
+            opacity: 0.1;
+            transform: perspective(500px) rotateX(60deg);
+            transform-origin: bottom;
+        }
+
+        /* Quotes */
+        .quote-container {
+            padding: 3rem;
+            border-left: 3px solid var(--curtain-red);
+            margin: 2rem 0;
+            position: relative;
+            background: rgba(139, 0, 0, 0.05);
+        }
+
+        .quote-text {
+            font-size: 1.5rem;
+            font-style: italic;
+            line-height: 1.8;
+        }
+
+        .quote-author {
+            margin-top: 1rem;
+            font-family: 'Special Elite', cursive;
+            color: var(--curtain-red);
+            text-align: right;
+        }
+
+        /* Interactive Elements */
+        .mystery-door {
+            width: 200px;
+            height: 350px;
+            background: linear-gradient(180deg, #2a1a1a, #1a0a0a);
+            margin: 3rem auto;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            border: 2px solid #3a2a2a;
+            box-shadow:
+                inset 0 0 50px rgba(0,0,0,0.8),
+                0 0 30px rgba(139, 0, 0, 0.2);
+        }
+
+        .mystery-door::before {
+            content: '';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 15px;
+            height: 15px;
+            background: #8B7355;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(139, 115, 85, 0.5);
+        }
+
+        .mystery-door:hover {
+            box-shadow:
+                inset 0 0 50px rgba(0,0,0,0.8),
+                0 0 50px rgba(139, 0, 0, 0.5);
+        }
+
+        .door-light {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 5px;
+            background: var(--flicker);
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 0 20px var(--flicker);
+        }
+
+        .mystery-door:hover .door-light {
+            opacity: 0.8;
+            animation: lightFlicker 0.5s infinite;
+        }
+
+        @keyframes lightFlicker {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Telephone */
+        .telephone-ring {
+            position: fixed;
+            bottom: 30px;
+            right: 150px;
+            font-size: 2rem;
+            cursor: pointer;
+            animation: phoneRing 4s ease-in-out infinite;
+            z-index: 50;
+            filter: drop-shadow(0 0 10px var(--curtain-red));
+        }
+
+        @keyframes phoneRing {
+            0%, 90%, 100% { transform: rotate(0deg); }
+            92% { transform: rotate(-10deg); }
+            94% { transform: rotate(10deg); }
+            96% { transform: rotate(-10deg); }
+            98% { transform: rotate(10deg); }
+        }
+
+        /* Message Popup */
+        .message-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .message-content {
+            text-align: center;
+            padding: 3rem;
+            animation: messageAppear 0.5s ease;
+        }
+
+        @keyframes messageAppear {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .message-text {
+            font-size: 2rem;
+            font-family: 'Special Elite', cursive;
+            color: var(--curtain-red);
+            margin-bottom: 2rem;
+        }
+
+        .close-message {
+            background: none;
+            border: 1px solid var(--curtain-red);
+            color: var(--cream);
+            padding: 0.5rem 2rem;
+            font-family: 'Special Elite', cursive;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .close-message:hover {
+            background: var(--curtain-red);
+        }
+
+        /* Footer */
+        footer {
+            padding: 4rem 2rem;
+            text-align: center;
+            font-family: 'Special Elite', cursive;
+            font-size: 0.9rem;
+            color: rgba(245, 230, 211, 0.4);
+            position: relative;
+        }
+
+        footer::before {
+            content: '◆ ◆ ◆';
+            display: block;
+            margin-bottom: 2rem;
+            letter-spacing: 1rem;
+            color: var(--curtain-red);
+            opacity: 0.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .curtain-left, .curtain-right {
+                width: 40px;
+            }
+            main {
+                margin: 0 40px;
+            }
+            .telephone-ring {
+                right: 60px;
+            }
+        }
+
+        /* Hidden Messages */
+        .hidden-message {
+            position: absolute;
+            opacity: 0;
+            transition: opacity 2s;
+            font-family: 'Special Elite', cursive;
+            font-size: 0.8rem;
+            color: var(--curtain-red);
+            pointer-events: none;
+        }
+
+        .the-room:hover .hidden-message {
+            opacity: 0.3;
+        }
+
+        /* Flickering Light */
+        .ceiling-light {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(255,248,220,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: ceilingFlicker 8s infinite;
+        }
+
+        @keyframes ceilingFlicker {
+            0%, 100% { opacity: 0.3; }
+            5% { opacity: 0.1; }
+            10% { opacity: 0.4; }
+            15% { opacity: 0.2; }
+            20% { opacity: 0.5; }
+            25%, 95% { opacity: 0.3; }
+        }
+
+        /* Dripping effect */
+        .drip {
+            position: absolute;
+            width: 2px;
+            height: 0;
+            background: var(--blood-red);
+            animation: drip 8s infinite;
+        }
+
+        @keyframes drip {
+            0% { height: 0; opacity: 1; top: 0; }
+            70% { height: 100px; opacity: 1; top: 0; }
+            100% { height: 100px; opacity: 0; top: 50px; }
+        }
+
+        .drip:nth-child(1) { left: 20%; animation-delay: 0s; }
+        .drip:nth-child(2) { left: 80%; animation-delay: 3s; }
+        .drip:nth-child(3) { left: 50%; animation-delay: 6s; }
+    </style>
+</head>
+<body>
+    <div class="static-overlay"></div>
+    <div class="scanlines"></div>
+
+    <div class="curtain-left"></div>
+    <div class="curtain-right"></div>
+
+    <main>
+        <!-- The Room -->
+        <section class="the-room">
+            <div class="ceiling-light"></div>
+            <div class="drip"></div>
+            <div class="drip"></div>
+            <div class="drip"></div>
+
+            <span class="floating-element owl">🦉</span>
+            <span class="floating-element coffee">☕</span>
+            <span class="floating-element log">🪵</span>
+            <span class="floating-element key">🗝️</span>
+
+            <div class="title-container">
+                <h1 class="main-title glitch-text" data-text="ENTER">ENTER</h1>
+                <p class="subtitle">
+                    <span class="backwards-text">through the darkness of future past</span>
+                </p>
+            </div>
+
+            <span class="hidden-message" style="top: 30%; left: 20%;">fire walk with me</span>
+            <span class="hidden-message" style="bottom: 20%; right: 20%;">the owls are not what they seem</span>
+        </section>
+
+        <!-- The Message -->
+        <section class="mystery-section">
+            <div class="section-content">
+                <h2 class="cryptic-heading">The Magician Longs to See</h2>
+                <div class="mystery-text">
+                    <p>Between two worlds, life flows. Like a river. Between two worlds, is the magician.</p>
+                    <p>One chants out between two worlds... <span class="glitch-text" data-text="FIRE WALK WITH ME">FIRE WALK WITH ME</span></p>
+                    <p>The black dog runs at night. Sniffing out that which cannot be smelled. It seeks the darkness. It seeks the void.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Diner -->
+        <section class="mystery-section diner-section">
+            <div class="section-content">
+                <h2 class="cryptic-heading">The Double R</h2>
+                <div class="mystery-text">
+                    <p>Damn fine coffee. And hot.</p>
+                </div>
+                <div class="menu">
+                    <div class="menu-item">
+                        <span class="menu-item-name">Coffee, Black as Midnight on a Moonless Night</span>
+                        <span class="menu-item-price">$?.??</span>
+                    </div>
+                    <div class="menu-item">
+                        <span class="menu-item-name">Cherry Pie (Slice of Heaven)</span>
+                        <span class="menu-item-price">$?.??</span>
+                    </div>
+                    <div class="menu-item">
+                        <span class="menu-item-name">Fish in the Percolator</span>
+                        <span class="menu-item-price">FREE</span>
+                    </div>
+                    <div class="menu-item">
+                        <span class="menu-item-name">The Owls Are Not What They Seem</span>
+                        <span class="menu-item-price">∞</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Lodge -->
+        <section class="mystery-section lodge-section">
+            <div class="chevron-floor"></div>
+            <div class="section-content">
+                <h2 class="cryptic-heading">The Waiting Room</h2>
+
+                <div class="quote-container">
+                    <p class="quote-text">"When you see me again, it won't be me."</p>
+                    <p class="quote-author">— The Man From Another Place</p>
+                </div>
+
+                <div class="mystery-text">
+                    <p>Is it future? Or is it past?</p>
+                    <p class="backwards-text">Meanwhile...</p>
+                </div>
+
+                <div class="mystery-door" onclick="openDoor()">
+                    <div class="door-light"></div>
+                </div>
+                <p style="text-align: center; font-family: 'Special Elite', cursive; opacity: 0.5;">click to enter</p>
+            </div>
+        </section>
+
+        <!-- The Dream -->
+        <section class="mystery-section">
+            <div class="section-content">
+                <h2 class="cryptic-heading">Last Night I Had The Strangest Dream</h2>
+                <div class="mystery-text">
+                    <p>I was in a red room. With a dwarf. He spoke, but the words... they came out differently. Backwards. Or was I backwards?</p>
+                    <p>She's filled with secrets.</p>
+                    <p>Where we're from, the birds sing a pretty song... and there's always music in the air.</p>
+                </div>
+
+                <div class="quote-container">
+                    <p class="quote-text">"I've got good news. That gum you like is going to come back in style."</p>
+                    <p class="quote-author">— The Giant</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Warning -->
+        <section class="mystery-section">
+            <div class="section-content">
+                <h2 class="cryptic-heading">⚠ WARNING ⚠</h2>
+                <div class="mystery-text" style="text-align: center;">
+                    <p>DO NOT LOOK FOR THE OWL CAVE</p>
+                    <p style="opacity: 0.5; font-size: 0.9rem;">(unless you must)</p>
+                    <p><br></p>
+                    <p style="letter-spacing: 0.5em;">BOB</p>
+                    <p style="letter-spacing: 0.5em;">IS</p>
+                    <p style="letter-spacing: 0.5em;">HUNGRY</p>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>THROUGH THE DARKNESS OF FUTURE PAST</p>
+            <p>THE MAGICIAN LONGS TO SEE</p>
+            <p>ONE CHANTS OUT BETWEEN TWO WORLDS</p>
+            <p style="margin-top: 2rem; color: var(--curtain-red);">FIRE WALK WITH ME</p>
+            <p style="margin-top: 3rem; opacity: 0.3;">© ???? — Time is a flat circle in the Black Lodge</p>
+        </footer>
+    </main>
+
+    <!-- Phone -->
+    <div class="telephone-ring" onclick="answerPhone()">📞</div>
+
+    <!-- Message Overlay -->
+    <div class="message-overlay" id="messageOverlay">
+        <div class="message-content">
+            <p class="message-text" id="messageText"></p>
+            <button class="close-message" onclick="closeMessage()">wake up</button>
+        </div>
+    </div>
+
+    <script>
+        // Cryptic messages for various interactions
+        const phoneMessages = [
+            "There's a man... in a smiling bag.",
+            "The owls are not what they seem.",
+            "She's dead. Wrapped in plastic.",
+            "It is happening again.",
+            "I'll see you again in 25 years.",
+            "Meanwhile...",
+            "Through the darkness of future past, the magician longs to see.",
+            "There's a fish in the percolator.",
+            "Diane, I'm holding in my hand a small box of chocolate bunnies."
+        ];
+
+        const doorMessages = [
+            "When you see me again, it won't be me.",
+            "Is it future? Or is it past?",
+            "I am the arm.",
+            "This is the water, and this is the well.",
+            "Gotta light?",
+            "We're not going to talk about Judy.",
+            "Find Laura.",
+            "My log has something to tell you."
+        ];
+
+        function showMessage(message) {
+            document.getElementById('messageText').textContent = message;
+            document.getElementById('messageOverlay').style.display = 'flex';
+        }
+
+        function closeMessage() {
+            document.getElementById('messageOverlay').style.display = 'none';
+        }
+
+        function answerPhone() {
+            const message = phoneMessages[Math.floor(Math.random() * phoneMessages.length)];
+            showMessage(message);
+        }
+
+        function openDoor() {
+            const message = doorMessages[Math.floor(Math.random() * doorMessages.length)];
+            showMessage(message);
+        }
+
+        // Random flicker effect on title
+        const title = document.querySelector('.main-title');
+        setInterval(() => {
+            if (Math.random() < 0.1) {
+                title.style.opacity = '0.7';
+                setTimeout(() => {
+                    title.style.opacity = '1';
+                }, 50);
+            }
+        }, 3000);
+
+        // Cursor trail effect
+        document.addEventListener('mousemove', (e) => {
+            if (Math.random() < 0.02) {
+                const spark = document.createElement('div');
+                spark.style.cssText = `
+                    position: fixed;
+                    left: ${e.clientX}px;
+                    top: ${e.clientY}px;
+                    width: 4px;
+                    height: 4px;
+                    background: ${Math.random() < 0.5 ? 'var(--curtain-red)' : 'var(--cream)'};
+                    border-radius: 50%;
+                    pointer-events: none;
+                    z-index: 9997;
+                    opacity: 0.5;
+                    animation: sparkFade 1s forwards;
+                `;
+                document.body.appendChild(spark);
+                setTimeout(() => spark.remove(), 1000);
+            }
+        });
+
+        // Add spark fade animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes sparkFade {
+                to { opacity: 0; transform: translateY(20px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Easter egg: Konami code reveals hidden message
+        let konamiCode = [];
+        const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.key);
+            konamiCode = konamiCode.slice(-10);
+            if (konamiCode.join('') === konamiSequence.join('')) {
+                showMessage("WE LIVE INSIDE A DREAM");
+            }
+        });
+
+        // Occasional screen distortion
+        setInterval(() => {
+            if (Math.random() < 0.05) {
+                document.body.style.transform = `translateX(${Math.random() * 4 - 2}px)`;
+                setTimeout(() => {
+                    document.body.style.transform = 'none';
+                }, 100);
+            }
+        }, 5000);
+
+        // Clock that shows wrong time
+        console.log('%c2:53', 'font-size: 50px; color: #8B0000; font-family: monospace;');
+        console.log('%cIt is happening again.', 'color: #722F37; font-style: italic;');
+    </script>
+</body>
+</html>
